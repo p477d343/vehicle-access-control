@@ -53,4 +53,4 @@ def evaluate_request(someip_msg):
     return True
 
 if __name__ == '__main__':
-    app.run(port=5002, debug=True)
+    app.run(host='100.77.173.105', port=5002, debug=True)
