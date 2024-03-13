@@ -29,8 +29,8 @@ host = "100.77.173.105"
 port = 1000
 serverAddr = (host, port)
 
-# 設定 Flask 服務器的 URL 和認證憑證
-flask_url = "http://100.77.173.105:5000/access-request"
+# 設定 PEP 的 URL 和認證憑證
+pep_url = "http://100.77.173.105:5000/access-request"
 auth = HTTPBasicAuth("admin", "password")
 
 # 發送訊號
@@ -44,9 +44,8 @@ for signal_type, signal_value in signal_sequence:
     else:
         continue
     payload_value = signal_value
-    #print(payload_value)
     payload = bytes([payload_length, payload_type, payload_value])
-    #print("\n payload = " + str(payload) + ", btyes of payload_value:" + str(bytes(payload_value)))
+    
     # 生成 SOME/IP 訊息
     msg_length = 8 + len(payload)
     msg_type = 0x00
@@ -62,11 +61,9 @@ for signal_type, signal_value in signal_sequence:
         + payload
     )
 
-    # 發送請求到 Flask 服務器進行存取控制
+    # 發送請求到 PEP 進行存取控制
     headers = {'Content-Type': 'application/octet-stream'}
-    #print("\n")
-    #print(someip_msg)
-    response = requests.post(flask_url, data=someip_msg, headers=headers, auth=auth)
+    response = requests.post(pep_url, data=someip_msg, headers=headers, auth=auth)
     if response.json()["decision"] == "allow":
         # 如果允許訪問，則發送訊號到 SOME/IP 服務器
         udpClient.sendto(someip_msg, serverAddr)
