@@ -17,4 +17,4 @@ def policy_engine_request(request_data):
     return response.json()["decision"]
 
 if __name__ == '__main__':
-    app.run(port=5001, debug=True)
+    app.run(host='100.77.173.105', port=5001, debug=True)
