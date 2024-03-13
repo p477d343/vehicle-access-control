@@ -1,6 +1,6 @@
 # Vehicle-Access-Control-Gateway
 
-一個基於 SOME/IP 協議的車輛訪問控制系統，使用 PEP（Policy Enforcement Point）、PDP（Policy Decision Point）和 Policy Engine 來管理對車輛功能的訪問。
+一個基於 SOME/IP 協定的車輛訪問控制系統，使用 PEP（Policy Enforcement Point）、PDP（Policy Decision Point）和 Policy Engine 來管理對車輛功能的訪問。
 
 ## Architecture
 
@@ -10,7 +10,7 @@
 2. `pep.py`：Policy Enforcement Point，接收客戶端的訪問請求，並向 PDP 發出決策請求。
 3. `pdp.py`：Policy Decision Point，接收來自 PEP 的決策請求，並向 Policy Engine 發出評估請求。
 4. `policy_engine.py`：Policy Engine，評估訪問請求是否符合定義的策略，並返回決策結果。
-5. `server.py`：SOME/IP 服務器，接收經過訪問控制的請求，並執行相應的操作。
+5. `server.py`：SOME/IP 伺服器，接收經過訪問控制的請求，並執行相應的操作。
 
 ## Steps
 
@@ -65,11 +65,11 @@
 
 - `pep.py`、`pdp.py` 和 `policy_engine.py` 使用 Flask 框架創建 HTTP 服務。它們之間通過 HTTP POST 請求進行通信。
 - `pep.py` 運行在 `100.77.173.105:5000`，`pdp.py` 運行在 `100.77.173.105:5001`，`policy_engine.py` 運行在 `100.77.173.105:5002`。
-- `pep.py` 實現了一個簡單的 HTTP 基本認證，用戶名和密碼存儲在程式碼中。在實際應用中，應使用更安全的認證方法。
+- `pep.py` 實現了一個簡單的 HTTP 基本認證，用戶名和密碼存儲在程式碼中。
 
 ## Policy Define
 
-策略在 `policy_engine.py` 中定義。目前，系統中定義了以下策略函數：
+規則在 `policy_engine.py` 中定義：
 
 - `malicious_signal_policy`：檢查煞車訊號中的特定值是否為 100。如果是，則拒絕訪問。
 - `traffic_info_policy`：總是允許訪問。
