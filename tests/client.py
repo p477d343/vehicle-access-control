@@ -1,6 +1,7 @@
 import socket
 import requests
 from requests.auth import HTTPBasicAuth
+import json
 
 # 定義一些常數，用於表示SOME/IP訊息的服務ID，方法ID，客戶端ID，會話ID
 SERVICE_ID = 0x0001
@@ -64,12 +65,29 @@ for signal_type, signal_value in signal_sequence:
     # 發送請求到 PEP 進行存取控制
     headers = {'Content-Type': 'application/octet-stream'}
     response = requests.post(pep_url, data=someip_msg, headers=headers, auth=auth)
-    if response.json()["decision"] == "allow":
-        # 如果允許訪問，則發送訊號到 SOME/IP 服務器
-        udpClient.sendto(someip_msg, serverAddr)
-        print(f"已發送 {signal_type} 訊號，訊號值為 {signal_value}")
+    print("PEP response status code:", response.status_code)
+    print("PEP response content:", response.content)
+    print("PEP response text:", response.text)
+
+    try:
+        json_response = response.json()
+        print("PEP response JSON:", json_response)
+    except json.JSONDecodeError as e:
+        print("Failed to parse PEP response as JSON:")
+        print(e)
+
+    if response.status_code == 200:
+        try:
+            if response.json()["decision"] == "allow":
+                # 如果允許訪問，則發送訊號到 SOME/IP 服務器
+                udpClient.sendto(someip_msg, serverAddr)
+                print(f"已發送 {signal_type} 訊號，訊號值為 {signal_value}")
+            else:
+                print(f"被拒絕發送 {signal_type} 訊號，訊號值為 {signal_value}")
+        except json.JSONDecodeError:
+            print("PEP returned invalid JSON format")
     else:
-        print(f"被拒絕發送 {signal_type} 訊號，訊號值為 {signal_value}")
+        print("PEP request failed with status code:", response.status_code)
 
 # 關閉客戶端物件
 udpClient.close()
