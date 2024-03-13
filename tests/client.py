@@ -11,15 +11,22 @@ SESSION_ID = 0x0001
 
 # 定義訊號序列
 signal_sequence = [
-    ("throttle", 30),
+    ("throttle", 30), 
     ("throttle", 50),
     ("brake", 20),
     ("throttle", 70),
     ("brake", 40),
     ("throttle", 100),  # 惡意訊號
     ("throttle", 60),
-    ("brake", 30),
-    ("throttle", 40)
+    ("brake", 30), 
+    ("throttle", 40),
+    # 新增:高頻率油門訊號
+    ("throttle", 70),
+    ("throttle", 80),
+    ("throttle", 90),
+    ("throttle", 70),
+    ("throttle", 80),
+    ("throttle", 90)
 ]
 
 # 建立一個UDP客戶端物件

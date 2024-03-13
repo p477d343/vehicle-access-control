@@ -39,18 +39,47 @@ def vehicle_control_policy(someip_msg):
 def risk_policy(someip_msg):
     return True
 
+# 新增:高頻率訊號風險評估
+def high_frequency_signal_risk(someip_msg):
+    payload_type = someip_msg.get("payload")[1] 
+    if payload_type == 0x01:  # 油門訊號
+        global throttle_count, last_throttle_time
+        current_time = time.time()
+        if current_time - last_throttle_time <= 1:  # 1秒內再次收到油門訊號
+            throttle_count += 1
+        else:
+            throttle_count = 1
+        last_throttle_time = current_time
+        
+        if throttle_count > 5:  # 1秒內收到超過5次油門訊號,視為高風險
+            return "high"
+        elif throttle_count > 3:  # 1秒內收到超過3次油門訊號,視為中風險 
+            return "medium"
+        else:
+            return "low"
+        
+    return "low"  # 非油門訊號,風險等級低
+
 # 評估請求
 def evaluate_request(someip_msg):
     policies = [
         malicious_signal_policy,
-        traffic_info_policy,
+        traffic_info_policy,  
         vehicle_control_policy,
         risk_policy
     ]
     for policy in policies:
         if not policy(someip_msg):
             return False
+        
+    risk_level = high_frequency_signal_risk(someip_msg)
+    if risk_level == "high":
+        return False
+    
     return True
+
+throttle_count = 0
+last_throttle_time = 0
 
 if __name__ == '__main__':
     app.run(host='100.77.173.105', port=5002, debug=True)
