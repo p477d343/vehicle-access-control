@@ -40,7 +40,6 @@ def vehicle_control_policy(someip_msg):
 def risk_policy(someip_msg):
     return True
 
-# 新增:高頻率訊號風險評估
 def high_frequency_signal_risk(someip_msg):
     payload_type = someip_msg.get("payload")[1] 
     if payload_type == 0x01:  # 油門訊號
