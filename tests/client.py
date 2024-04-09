@@ -13,8 +13,8 @@ SESSION_ID = 0x0001
 udpClient = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
 # 設定服務器的IP地址和端口號
-host = "100.77.173.105" 
-port = 30490
+host = "100.65.78.63" 
+port = 30491
 serverAddr = (host, port)
 
 # 設定PEP的URL和認證憑證
