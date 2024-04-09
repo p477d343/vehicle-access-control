@@ -1,5 +1,4 @@
 from flask import Flask, request, jsonify
-import time
 
 app = Flask(__name__)
 
@@ -25,61 +24,55 @@ def parse_someip_msg(data):
     someip_msg["payload"] = data[23:]
     return someip_msg
 
-# 策略函數
-def malicious_signal_policy(someip_msg):
-    if someip_msg.get("payload")[2] == 100:
-        return False
-    return True
+def get_service_policies(service_id):
+    # 根據服務ID獲取相關策略，這裡使用虛擬策略
+    policies = [
+        "check_subscriber_authorization",
+        "check_subscriber_history",
+        "check_system_security_status"
+    ]
+    return policies
 
-def traffic_info_policy(someip_msg):
-    return True
+def is_authorized_subscriber(subscriber_id, service_id):
+    # 檢查訂閱者是否為服務的授權用戶，這裡簡單地用ID判斷
+    return subscriber_id != "ECUC"
 
-def vehicle_control_policy(someip_msg):
-    return True
+def has_suspicious_history(subscriber_id):
+    # 檢查訂閱者之前是否有可疑行為，這裡簡單地用ID判斷
+    return subscriber_id == "ECUC"
 
-def risk_policy(someip_msg):
+def is_high_risk_environment():
+    # 檢查當前系統安全狀態和威脅情報，這裡簡單地返回True
     return True
-
-def high_frequency_signal_risk(someip_msg):
-    payload_type = someip_msg.get("payload")[1] 
-    if payload_type == 0x01:  # 油門訊號
-        global throttle_count, last_throttle_time
-        current_time = time.time()
-        if current_time - last_throttle_time <= 1:  # 1秒內再次收到油門訊號
-            throttle_count += 1
-        else:
-            throttle_count = 1
-        last_throttle_time = current_time
-        
-        if throttle_count > 5:  # 1秒內收到超過5次油門訊號,視為高風險
-            return "high"
-        elif throttle_count > 3:  # 1秒內收到超過3次油門訊號,視為中風險 
-            return "medium"
-        else:
-            return "low"
-        
-    return "low"  # 非油門訊號,風險等級低
 
 # 評估請求
 def evaluate_request(someip_msg):
-    policies = [
-        malicious_signal_policy,
-        traffic_info_policy,  
-        vehicle_control_policy,
-        risk_policy
-    ]
-    for policy in policies:
-        if not policy(someip_msg):
-            return False
-        
-    risk_level = high_frequency_signal_risk(someip_msg)
-    if risk_level == "high":
-        return False
-    
-    return True
+    subscriber_id = someip_msg["client_id"]
+    service_id = someip_msg["service_id"]
 
-throttle_count = 0
-last_throttle_time = 0
+    # 獲取服務相關的策略
+    policies = get_service_policies(service_id)
+
+    # 風險評估
+    risk_score = 0
+
+    # 檢查訂閱者身份和權限
+    if not is_authorized_subscriber(subscriber_id, service_id):
+        risk_score += 1
+
+    # 檢查訂閱者之前的行為歷史
+    if has_suspicious_history(subscriber_id):
+        risk_score += 1
+
+    # 考慮當前系統安全狀態和威脅情報
+    if is_high_risk_environment():
+        risk_score += 1
+
+    # 根據風險評估結果做出決策
+    if risk_score >= 2:
+        return False
+    else:
+        return True
 
 if __name__ == '__main__':
-    app.run(host='100.77.173.105', port=5002, debug=True)
+    app.run(host='localhost', port=5002, debug=True)
