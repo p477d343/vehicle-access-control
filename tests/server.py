@@ -5,7 +5,7 @@ udpServer = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
 # 設定服務器的IP地址和端口號
 host = "100.65.78.63" 
-port = 30492
+port = 30490
 serverAddr = (host, port)
 
 # 將服務器物件綁定到指定的地址
