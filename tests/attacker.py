@@ -42,14 +42,29 @@ def generate_someip_msg(service_id):
 def send_subscribe_request(someip_msg):
     headers = {'Content-Type': 'application/octet-stream'}
     response = requests.post(pep_url, data=someip_msg, headers=headers, auth=auth)
-    print("PEP response:", response.json())
+    print("PEP response status code:", response.status_code)
+    print("PEP response content:", response.content)
+    print("PEP response text:", response.text)
     
-    if response.status_code == 200 and response.json()["decision"] == "allow":
-        # 如果允許訪問,則發送訂閱請求到SOME/IP服務器
-        udpClient.sendto(someip_msg, serverAddr)
-        print("已發送SOME/IP-SD Subscribe訊息")
+    try:
+        json_response = response.json()
+        print("PEP response JSON:", json_response)
+    except json.JSONDecodeError as e:
+        print("Failed to parse PEP response as JSON:")
+        print(e)
+
+    if response.status_code == 200:
+        try:
+            if response.json()["decision"] == "allow":
+                # 如果允許訪問,則發送訂閱請求到SOME/IP服務器
+                udpClient.sendto(someip_msg, serverAddr) 
+                print("已發送SOME/IP-SD Subscribe訊息")
+            else:
+                print("訂閱請求被拒絕")
+        except json.JSONDecodeError:
+            print("PEP returned invalid JSON format")
     else:
-        print("訂閱請求被拒絕")
+        print("PEP request failed with status code:", response.status_code)
 
 # 發送多個訂閱請求,包括未授權的服務和頻繁的請求
 print("發送未授權的服務訂閱請求...")

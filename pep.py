@@ -45,7 +45,7 @@ def access_request():
 
 def pdp_request(auth_request):
     url = "http://100.77.173.105:5001/pdp"
-    headers = {"Content-Type": "application/json"} 
+    headers = {"Content-Type": "application/octet-stream"}
     response = requests.post(url, json=auth_request, headers=headers)
     return response.json()["decision"]
 
