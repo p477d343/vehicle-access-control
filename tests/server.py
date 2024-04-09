@@ -1,28 +1,39 @@
 import socket
-import struct
 
-# 創建UDP socket
-sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+# 建立一個UDP服務器物件
+udpServer = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
-# 綁定IP地址和端口號
-server_address = ('100.64.128.11', 30509)
-sock.bind(server_address)
+# 設定服務器的IP地址和端口號
+host = "100.77.173.105"
+port = 30490
+serverAddr = (host, port)
 
-print('Server started on', server_address)
+# 將服務器物件綁定到指定的地址
+udpServer.bind(serverAddr)
 
+# 定義一個函數,用於將四個字節的二進制數轉換為十進制數,並返回整數
+def bytes_to_int(bytes):
+    return int.from_bytes(bytes, byteorder="big")
+
+# 定義一個函數,用於解析SOME/IP訊息的各個字段,並返回一個字典
+def parse_someip_msg(data):
+    someip_msg = {}
+    someip_msg["service_id"] = bytes_to_int(data[0:4]) 
+    someip_msg["method_id"] = bytes_to_int(data[4:8])
+    someip_msg["client_id"] = bytes_to_int(data[8:12]) 
+    someip_msg["session_id"] = bytes_to_int(data[12:16])
+    someip_msg["msg_length"] = bytes_to_int(data[16:20])
+    someip_msg["msg_type"] = data[20]
+    someip_msg["msg_version"] = data[21] 
+    someip_msg["msg_return_code"] = data[22]
+    return someip_msg
+
+# 使用while迴圈,不斷地接收客戶端發送的訂閱請求
 while True:
-    # 接收SOME/IP-SD訂閱請求
-    data, address = sock.recvfrom(1024)
-    message_type, return_code, protocol_version, interface_version, message_id, length = struct.unpack_from('!BBBBBB', data)
+    data, clientAddr = udpServer.recvfrom(1024)
+    someip_msg = parse_someip_msg(data)
+    print(f"收到來自{clientAddr}的SOME/IP-SD Subscribe訊息")
+    print(f"服務ID: {someip_msg['service_id']}, 方法ID: {someip_msg['method_id']}")
 
-    if message_type == 0x00 and protocol_version == 0x01:
-        service_id, instance_id, major_version = struct.unpack_from('!IIH', data, 8)
-        print('Received SOME/IP-SD Subscribe message from', address)
-        print('Service ID:', hex(service_id))
-        print('Instance ID:', hex(instance_id))
-        print('Major Version:', hex(major_version))
-
-        # 發送SOME/IP-SD訂閱確認響應
-        subscribe_ack_message = struct.pack('!BBBBBBHI', 0x40, 0x00, protocol_version, interface_version, message_id, length, 0x00, 0x00)
-        sock.sendto(subscribe_ack_message, address)
-        print('Sent SOME/IP-SD Subscribe Ack message to', address)
+# 關閉服務器物件
+udpServer.close()
