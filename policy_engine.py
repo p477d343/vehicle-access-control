@@ -51,11 +51,6 @@ def calculate_risk_score(client_id, service_id):
             client_history[client_id] = []
         client_history[client_id].append("unauthorized_service")
     
-    # 檢查系統的當前安全狀態和威脅情報
-    if is_system_under_attack():
-        # 如果系統正處於被攻擊狀態,風險值增加30
-        risk_score += 30
-    
     # 更新客戶端的訂閱請求歷史
     if client_id not in client_history:
         client_history[client_id] = []
